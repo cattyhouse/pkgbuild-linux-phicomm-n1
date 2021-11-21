@@ -24,25 +24,6 @@
         };
     };
 
-    dc_in: regulator-vcc_12v {
-        compatible = "regulator-fixed";
-        regulator-name = "VCC_12V";
-        regulator-min-microvolt = <12000000>;
-        regulator-max-microvolt = <12000000>;
-        regulator-boot-on;
-        regulator-always-on;
-    };
-
-    vddgpu: regulator-vddgpu {
-        compatible = "regulator-fixed";
-        regulator-name = "mali";
-        regulator-min-microvolt = <950000>;
-        regulator-max-microvolt = <950000>;
-        vin-supply = <&dc_in>;
-        regulator-boot-on;
-        regulator-always-on;
-    };
-
     soc {
         usb: usb@d0078080 {
             dwc3: usb@c9000000 {
@@ -67,32 +48,22 @@
 };
 
 &ethmac {
-    snps,aal;
-    snps,txpbl = <0x8>;
-    snps,rxpbl = <0x8>;
-    snps,force_thresh_dma_mode;
-    /* Select external PHY by default */
-    phy-handle = <&eth_phy0>;
-    /* External PHY reset is shared with internal PHY Led signals */
-    snps,reset-gpio = <&gpio GPIOZ_14 0>;
-    snps,reset-delays-us = <0 10000 1000000>;
-    snps,reset-active-low;
-    mdio {
-        #address-cells = <0x1>;
-        #size-cells = <0x0>;
-        compatible = "snps,dwmac-mdio";
-        phandle = <0x1a>;
-        eth_phy0: ethernet-phy@0 {
-            reg = <0x0>;
-            phandle = <0x1d>;
-        };
-    };
-};
-
-&external_mdio {
-    external_phy: ethernet-phy@0 {
-        /delete-property/ eee-broken-1000t;
-    };
+	phy-handle = <&eth_phy0>;
+	mdio {
+		compatible = "snps,dwmac-mdio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		eth_phy0: ethernet-phy@0 {
+			/* Realtek RTL8211F (0x001cc916) */
+			reg = <0>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <80000>;
+			reset-gpios = <&gpio GPIOZ_14 GPIO_ACTIVE_LOW>;
+			interrupt-parent = <&gpio_intc>;
+			/* MAC_INTR on GPIOZ_15 */
+			interrupts = <29 IRQ_TYPE_LEVEL_LOW>;
+		};
+	};
 };
 
 /* This UART is connected to the Bluetooth module */
