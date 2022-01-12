@@ -6,9 +6,9 @@ ALL_kver="%KERNVER%"
 PRESETS=('default')
 
 #default_config="/etc/mkinitcpio.conf"
-default_image="/boot/initramfs-linux-phicomm-n1.img"
+default_image="/boot/initramfs-%PKGBASE%.img"
 #default_options=""
 
 #fallback_config="/etc/mkinitcpio.conf"
-fallback_image="/boot/initramfs-linux-phicomm-n1-fallback.img"
+fallback_image="/boot/initramfs-%PKGBASE%-fallback.img"
 fallback_options="-S autodetect"
