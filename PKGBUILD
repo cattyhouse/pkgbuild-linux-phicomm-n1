@@ -24,7 +24,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
 md5sums=('071d49ff4e020d58c04f9f3f76d3b594'
          '245d1b4218aab0cc5c15e31061e0ba6d'
          'c5fb20151ed3a9310d4e3fbf4f186b87'
-         '1b3eee460a078f978b061eedcae9832c'
+         '27878c925602d6ae0620503a54b8bb40'
          '30130b4dcd8ad4364ddbfd56c3058d5e'
          '0a5f16bfec6ad982a2f6782724cca8ba'
          'bdeb5fb852fd92b4e76b4796db500dd4')
@@ -74,7 +74,7 @@ _package() {
   replaces=('linux-armv8')
   conflicts=('linux')
   backup=("etc/mkinitcpio.d/${pkgbase}.preset")
-  install=${pkgname}.install
+  #install=${pkgname}.install
 
   cd $_srcname
   local kernver="$(<version)"
