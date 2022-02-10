@@ -50,12 +50,12 @@ prepare() {
 build() {
   cd ${_srcname}
 
+  # use old .config as base, and use default option for new features #TODO
+  make olddefconfig
   # get kernel version
   make prepare
   make -s kernelrelease > version
 
-  # use old .config as base, and use default option for new features #TODO
-  make olddefconfig
   # copy newly generated .config back #TODO
   cp .config ${srcdir}/config
   
