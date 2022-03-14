@@ -4,7 +4,7 @@
 buildarch=8
 
 pkgbase=linux-phicomm-n1
-pkgver=5.15.14
+pkgver=5.15.28
 _srcname="linux-${pkgver%.*}"
 _kernelname=${pkgbase#linux}
 _desc="AArch64 for Phicomm N1"
@@ -22,9 +22,9 @@ source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
         '60-linux.hook'
         '90-linux.hook')
 md5sums=('071d49ff4e020d58c04f9f3f76d3b594'
-         '245d1b4218aab0cc5c15e31061e0ba6d'
+         '6ff5ca4f41f6c36188807edaf956e0ae'
          'c5fb20151ed3a9310d4e3fbf4f186b87'
-         '27878c925602d6ae0620503a54b8bb40'
+         '4c2b810c5157cebeaa9ff54a2d620b4c'
          '30130b4dcd8ad4364ddbfd56c3058d5e'
          '0a5f16bfec6ad982a2f6782724cca8ba'
          'bdeb5fb852fd92b4e76b4796db500dd4')
