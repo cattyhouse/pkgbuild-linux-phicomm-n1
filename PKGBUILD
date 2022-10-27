@@ -4,30 +4,32 @@
 buildarch=8
 
 pkgbase=linux-phicomm-n1
-pkgver=5.15.28
+# must be *.*.*
+pkgver=5.15.75
+pkgrel=1
 _srcname="linux-${pkgver%.*}"
 _kernelname=${pkgbase#linux}
 _desc="AArch64 for Phicomm N1"
-pkgrel=1
 arch=('aarch64')
 url="http://www.kernel.org/"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'dtc')
 options=('!strip')
-source=("http://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.xz"
-        "http://www.kernel.org/pub/linux/kernel/v5.x/patch-${pkgver}.xz"
+source=("https://www.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
+        "https://www.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/patch-${pkgver}.xz"
         'meson-gxl-s905d-phicomm-n1.dts'
         'config'
         'linux.preset'
         '60-linux.hook'
         '90-linux.hook')
-md5sums=('071d49ff4e020d58c04f9f3f76d3b594'
-         '6ff5ca4f41f6c36188807edaf956e0ae'
-         'c5fb20151ed3a9310d4e3fbf4f186b87'
-         '4c2b810c5157cebeaa9ff54a2d620b4c'
-         '30130b4dcd8ad4364ddbfd56c3058d5e'
-         '0a5f16bfec6ad982a2f6782724cca8ba'
-         'bdeb5fb852fd92b4e76b4796db500dd4')
+
+sha256sums=('57b2cf6991910e3b67a1b3490022e8a0674b6965c74c12da1e99d138d1991ee8'
+            '2d5cd95dff820f8ecf3663d662d12269f2c2d1abc0115165d6e95099c88013e2'
+            '5f2f6d1e48ab59d7a2999bff613ab9fd9c6fa8da94882e5883463d4cb1fba680'
+            'cfbdffaab282f6a4f0dded4877b6d722ebcaf90e33f910801875689c109960bf'
+            '2e1e488f947bb33cc3e8d934c429c6aacef879d37279ff52e0049064d5f90810'
+            '452b8d4d71e1565ca91b1bebb280693549222ef51c47ba8964e411b2d461699c'
+            '0d5f3abb04a8483aabf35be6c0ef987bd1784e1407dc74e7a267b597fea8022b')
 
 prepare() {
   cd $_srcname
@@ -49,16 +51,13 @@ prepare() {
 
 build() {
   cd ${_srcname}
-
   # use old .config as base, and use default option for new features #TODO
   make olddefconfig
   # get kernel version
   make prepare
   make -s kernelrelease > version
-
   # copy newly generated .config back #TODO
   cp .config ${srcdir}/config
-  
   # build!
   unset LDFLAGS
   make ${MAKEFLAGS} Image modules # we don't need Image.gz #TODO
@@ -69,12 +68,11 @@ build() {
 _package() {
   pkgdesc="The Linux Kernel and modules - ${_desc}"
   depends=('coreutils' 'kmod' 'mkinitcpio>=0.7') # we don't need linux-firmware #TODO
-  optdepends=('crda: to set the correct wireless channels of your country')
+  optdepends=('wireless-regdb: to set the correct wireless channels of your country')
   provides=("linux=${pkgver}" "WIREGUARD-MODULE")
-  replaces=('linux-armv8')
   conflicts=('linux')
   backup=("etc/mkinitcpio.d/${pkgbase}.preset")
-  #install=${pkgname}.install
+  install=${pkgname}.install # it is used to check separate /boot and rm initramfs after uninstall #TODO
 
   cd $_srcname
   local kernver="$(<version)"

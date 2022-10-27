@@ -8,4 +8,4 @@ Target = usr/lib/initcpio/*
 [Action]
 Description = Updating %PKGBASE% initcpios...
 When = PostTransaction
-Exec = /usr/bin/sh -ce "/usr/bin/mkinitcpio -p %PKGBASE% && mkimage -A arm64 -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-%PKGBASE%.img /boot/uInitrd"
+Exec = /usr/bin/sh -ce "/usr/bin/mkinitcpio -p %PKGBASE% && mkimage -A arm64 -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-%PKGBASE%.img /boot/uInitrd && rm /boot/initramfs-%PKGBASE%.img"
