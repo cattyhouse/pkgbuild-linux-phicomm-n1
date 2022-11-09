@@ -51,8 +51,8 @@
     phy-handle = <&eth_phy0>;
     mdio {
         compatible = "snps,dwmac-mdio";
-        #address-cells = <1>;
-        #size-cells = <0>;
+        /* address-cells = <1>; */
+        /* size-cells = <0>; */
         eth_phy0: ethernet-phy@0 {
             /* Realtek RTL8211F (0x001cc916) */
             reg = <0>;
