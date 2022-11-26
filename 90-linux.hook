@@ -1,5 +1,5 @@
 [Trigger]
-Type = File
+Type = Path
 Operation = Install
 Operation = Upgrade
 Target = boot/zImage
@@ -8,4 +8,4 @@ Target = usr/lib/initcpio/*
 [Action]
 Description = Updating %PKGBASE% initcpios...
 When = PostTransaction
-Exec = /usr/bin/sh -ce "/usr/bin/mkinitcpio -p %PKGBASE% && cp -f /boot/initramfs-%PKGBASE%.img /boot/uInitrd"
+Exec = /usr/bin/sh -ce "/usr/bin/mkinitcpio -p %PKGBASE% && cp -af /boot/initramfs-%PKGBASE%.img /boot/uInitrd"
