@@ -5,7 +5,7 @@ buildarch=8
 
 pkgbase=linux-phicomm-n1
 # must be *.*.*
-pkgver=5.15.75
+pkgver=5.15.80
 pkgrel=1
 _srcname="linux-${pkgver%.*}"
 _kernelname=${pkgbase#linux}
@@ -24,12 +24,17 @@ source=("https://www.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.ta
         '90-linux.hook')
 
 sha256sums=('57b2cf6991910e3b67a1b3490022e8a0674b6965c74c12da1e99d138d1991ee8'
-            '2d5cd95dff820f8ecf3663d662d12269f2c2d1abc0115165d6e95099c88013e2'
-            '5f2f6d1e48ab59d7a2999bff613ab9fd9c6fa8da94882e5883463d4cb1fba680'
-            'cfbdffaab282f6a4f0dded4877b6d722ebcaf90e33f910801875689c109960bf'
+            '62aa80542ab65fe49bbf7fba32696f46923b6ca55cb29d9423f51ebb2ed7698e'
+            'baea1be94e73b8bbc6aee84cbc82925cf561b4526418e11c560b8e6984423ff3'
+            'edcc3b5b516d02da1fbc60b18a0d10e7c00ff520b6676fa86f5d6e556519064f'
             '2e1e488f947bb33cc3e8d934c429c6aacef879d37279ff52e0049064d5f90810'
-            '452b8d4d71e1565ca91b1bebb280693549222ef51c47ba8964e411b2d461699c'
-            '0d5f3abb04a8483aabf35be6c0ef987bd1784e1407dc74e7a267b597fea8022b')
+            '05ea4e00d1e99bf8140a21c94e3c42acf17b9debad9c6f5decbe1dd1fe04332c'
+            'e0d36a5144ee36ff5861ae948b337b1ddcd91f1c9d6e858453050bc2365b2cc9')
+
+# set /proc/version
+export KBUILD_BUILD_HOST=archlinux
+export KBUILD_BUILD_USER=$pkgbase
+export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
 prepare() {
   cd $_srcname
