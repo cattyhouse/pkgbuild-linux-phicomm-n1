@@ -1,37 +1,31 @@
-# AArch64 multi-platform
-# Maintainer: Kevin Mihelich <kevin@archlinuxarm.org>
-
-buildarch=8
+# Maintainer: Justin
 
 pkgbase=linux-phicomm-n1
-# must be *.*.*
 pkgver=5.15.80
 pkgrel=1
-_srcname="linux-${pkgver%.*}"
-_kernelname=${pkgbase#linux}
-_desc="AArch64 for Phicomm N1"
-arch=('aarch64')
-url="http://www.kernel.org/"
-license=('GPL2')
-makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'dtc')
+pkgdesc='AArch64 for Phicomm N1'
+url="https://www.kernel.org/"
+arch=(aarch64)
+license=(GPL2)
+makedepends=(
+  bc libelf pahole cpio perl tar xz git
+)
 options=('!strip')
-source=("https://www.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz"
-        "https://www.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/patch-${pkgver}.xz"
-        'meson-gxl-s905d-phicomm-n1.dts'
-        'config'
-        'linux.preset'
-        '60-linux.hook'
-        '90-linux.hook')
-
+_srcname=linux-${pkgver%.*}
+source=(
+  https://www.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz
+  https://www.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/patch-${pkgver}.xz
+  meson-gxl-s905d-phicomm-n1.dts
+  99-phicomm-n1-install.hook
+  config
+)
+# https://www.kernel.org/pub/linux/kernel/v5.x/sha256sums.asc
 sha256sums=('57b2cf6991910e3b67a1b3490022e8a0674b6965c74c12da1e99d138d1991ee8'
             '62aa80542ab65fe49bbf7fba32696f46923b6ca55cb29d9423f51ebb2ed7698e'
             'baea1be94e73b8bbc6aee84cbc82925cf561b4526418e11c560b8e6984423ff3'
-            'edcc3b5b516d02da1fbc60b18a0d10e7c00ff520b6676fa86f5d6e556519064f'
-            '2e1e488f947bb33cc3e8d934c429c6aacef879d37279ff52e0049064d5f90810'
-            '05ea4e00d1e99bf8140a21c94e3c42acf17b9debad9c6f5decbe1dd1fe04332c'
-            'e0d36a5144ee36ff5861ae948b337b1ddcd91f1c9d6e858453050bc2365b2cc9')
+            '4e53813565c705ad3b034f966cd18d7494c5ba9ae2dbb9fb34e5e32ee9008196'
+            'edcc3b5b516d02da1fbc60b18a0d10e7c00ff520b6676fa86f5d6e556519064f')
 
-# set /proc/version
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
@@ -44,79 +38,70 @@ prepare() {
   echo "-$pkgrel" > localversion.10-pkgrel
   echo "${pkgbase#linux}" > localversion.20-pkgname
 
-  # add upstream patch
   git apply --whitespace=nowarn ../patch-${pkgver}
 
+
+  
+  echo "Setting config..."
   cat "${srcdir}/config" > ./.config
   
-  # self-maintained dtb for phicomm-n1 #TODO
-  target_dts="meson-gxl-s905d-phicomm-n1.dts"
-  cat "${srcdir}/${target_dts}" > ./arch/arm64/boot/dts/amlogic/"${target_dts}"
+  cat "${srcdir}/meson-gxl-s905d-phicomm-n1.dts" > ./arch/arm64/boot/dts/amlogic/meson-gxl-s905d-phicomm-n1.dts
+  
+  make olddefconfig
+  diff -u ../config .config || :
+
+  make prepare
+  make -s kernelrelease > version
+  cat ./.config > ${srcdir}/config
+  echo "Prepared $pkgbase version $(<version)"
 }
 
 build() {
-  cd ${_srcname}
-  # use old .config as base, and use default option for new features #TODO
-  make olddefconfig
-  # get kernel version
-  make prepare
-  make -s kernelrelease > version
-  # copy newly generated .config back #TODO
-  cp .config ${srcdir}/config
-  # build!
+  cd $_srcname
   unset LDFLAGS
-  make ${MAKEFLAGS} Image modules # we don't need Image.gz #TODO
-  # Generate device tree blobs with symbols to support applying device tree overlays in U-Boot
+  make ${MAKEFLAGS} Image modules
   make ${MAKEFLAGS} DTC_FLAGS="-@" dtbs
 }
 
 _package() {
-  pkgdesc="The Linux Kernel and modules - ${_desc}"
-  depends=('coreutils' 'kmod' 'mkinitcpio>=0.7') # we don't need linux-firmware #TODO
-  optdepends=('wireless-regdb: to set the correct wireless channels of your country')
-  provides=("linux=${pkgver}" "WIREGUARD-MODULE")
-  conflicts=('linux')
-  backup=("etc/mkinitcpio.d/${pkgbase}.preset")
-  install=${pkgname}.install # it is used to check separate /boot and rm initramfs after uninstall #TODO
+  pkgdesc="The $pkgdesc kernel and modules"
+  depends=(coreutils kmod initramfs)
+  optdepends=('wireless-regdb: to set the correct wireless channels of your country'
+              'linux-firmware: firmware images needed for some devices')
+  provides=(VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE KSMBD-MODULE)
+  replaces=(wireguard-lts)
 
   cd $_srcname
   local kernver="$(<version)"
   local modulesdir="$pkgdir/usr/lib/modules/$kernver"
 
-  echo "Installing boot image and dtbs..."
-  # zImage is needed by u-boot #TODO
-  install -Dm644 arch/arm64/boot/Image "${pkgdir}/boot/zImage"
+  echo "Installing boot image..."
+  # systemd expects to find the kernel here to allow hibernation
+  # https://github.com/systemd/systemd/commit/edda44605f06a41fb86b7ab8128dcf99161d2344
+  install -Dm644 arch/arm64/boot/Image "$modulesdir/vmlinuz"
+  
+  echo "Installing dtbs..."
   make INSTALL_DTBS_PATH="${pkgdir}/boot/dtbs" dtbs_install
-  # rename to dtb.img for easier loading #TODO
   install -Dm644 "${pkgdir}/boot/dtbs/amlogic/meson-gxl-s905d-phicomm-n1.dtb" "${pkgdir}/boot/dtb.img"
 
+
+  # Used by mkinitcpio to name the kernel
+  echo "$pkgbase" | install -Dm644 /dev/stdin "$modulesdir/pkgbase"
+
   echo "Installing modules..."
-  make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 modules_install
+  make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
+    DEPMOD=/doesnt/exist modules_install  # Suppress depmod
 
   # remove build and source links
   rm "$modulesdir"/{source,build}
 
-  # sed expression for following substitutions
-  local _subst="
-    s|%PKGBASE%|${pkgbase}|g
-    s|%KERNVER%|${kernver}|g
-  "
-
-  # install mkinitcpio preset file
-  sed "${_subst}" ../linux.preset |
-    install -Dm644 /dev/stdin "${pkgdir}/etc/mkinitcpio.d/${pkgbase}.preset"
-
   # install pacman hooks
-  sed "${_subst}" ../60-linux.hook |
-    install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/60-${pkgbase}.hook"
-  sed "${_subst}" ../90-linux.hook |
-    install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/90-${pkgbase}.hook"
+  cat ../99-phicomm-n1-install.hook | install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/99-${pkgbase}.hook"
 }
 
 _package-headers() {
-  pkgdesc="Header files and scripts for building modules for linux kernel - ${_desc}"
-  provides=("linux-headers=${pkgver}")
-  conflicts=('linux-headers')
+  pkgdesc="Headers and scripts for building modules for the $pkgdesc kernel"
+  depends=(pahole)
 
   cd $_srcname
   local builddir="$pkgdir/usr/lib/modules/$(<version)/build"
@@ -128,8 +113,11 @@ _package-headers() {
   install -Dt "$builddir/arch/arm64" -m644 arch/arm64/Makefile
   cp -t "$builddir" -a scripts
 
-  # add xfs and shmem for aufs building
-  mkdir -p "$builddir"/{fs/xfs,mm}
+  # required when STACK_VALIDATION is enabled
+  #install -Dt "$builddir/tools/objtool" tools/objtool/objtool
+
+  # required when DEBUG_INFO_BTF_MODULES is enabled
+  #install -Dt "$builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
 
   echo "Installing headers..."
   cp -t "$builddir" -a include
@@ -187,14 +175,20 @@ _package-headers() {
     esac
   done < <(find "$builddir" -type f -perm -u+x ! -name vmlinux -print0)
 
+  echo "Stripping vmlinux..."
+  strip -v $STRIP_STATIC "$builddir/vmlinux"
+
   echo "Adding symlink..."
   mkdir -p "$pkgdir/usr/src"
   ln -sr "$builddir" "$pkgdir/usr/src/$pkgbase"
 }
 
-pkgname=("${pkgbase}" "${pkgbase}-headers")
-for _p in ${pkgname[@]}; do
-  eval "package_${_p}() {
-    _package${_p#${pkgbase}}
+pkgname=("$pkgbase" "$pkgbase-headers")
+for _p in "${pkgname[@]}"; do
+  eval "package_$_p() {
+    $(declare -f "_package${_p#$pkgbase}")
+    _package${_p#$pkgbase}
   }"
 done
+
+# vim:set ts=8 sts=2 sw=2 et:
