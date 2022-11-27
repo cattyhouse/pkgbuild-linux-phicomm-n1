@@ -13,8 +13,8 @@ makedepends=(
 options=('!strip')
 _srcname=linux-${pkgver%.*}
 source=(
-  https://www.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz
-  https://www.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/patch-${pkgver}.xz
+  https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz
+  https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/patch-${pkgver}.xz
   meson-gxl-s905d-phicomm-n1.dts
   99-phicomm-n1-install.hook
   config
@@ -24,7 +24,7 @@ sha256sums=('57b2cf6991910e3b67a1b3490022e8a0674b6965c74c12da1e99d138d1991ee8'
             '62aa80542ab65fe49bbf7fba32696f46923b6ca55cb29d9423f51ebb2ed7698e'
             'baea1be94e73b8bbc6aee84cbc82925cf561b4526418e11c560b8e6984423ff3'
             '4e53813565c705ad3b034f966cd18d7494c5ba9ae2dbb9fb34e5e32ee9008196'
-            'edcc3b5b516d02da1fbc60b18a0d10e7c00ff520b6676fa86f5d6e556519064f')
+            'a5fa84b8d9d57858b6acc88987499d8191fb7f869d53200cb264e5e15aa1c1ed')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
@@ -37,10 +37,9 @@ prepare() {
   scripts/setlocalversion --save-scmversion
   echo "-$pkgrel" > localversion.10-pkgrel
   echo "${pkgbase#linux}" > localversion.20-pkgname
-
+  
+  echo "Applying kernel patch..."
   git apply --whitespace=nowarn ../patch-${pkgver}
-
-
   
   echo "Setting config..."
   cat "${srcdir}/config" > ./.config
@@ -48,8 +47,7 @@ prepare() {
   cat "${srcdir}/meson-gxl-s905d-phicomm-n1.dts" > ./arch/arm64/boot/dts/amlogic/meson-gxl-s905d-phicomm-n1.dts
   
   make olddefconfig
-  diff -u ../config .config || :
-
+  #diff -u ../config .config || :
   make prepare
   make -s kernelrelease > version
   cat ./.config > ${srcdir}/config
@@ -58,9 +56,7 @@ prepare() {
 
 build() {
   cd $_srcname
-  unset LDFLAGS
-  make ${MAKEFLAGS} Image modules
-  make ${MAKEFLAGS} DTC_FLAGS="-@" dtbs
+  make DTC_FLAGS+="-@" Image modules dtbs
 }
 
 _package() {
@@ -91,6 +87,9 @@ _package() {
   echo "Installing modules..."
   make INSTALL_MOD_PATH="$pkgdir/usr" INSTALL_MOD_STRIP=1 \
     DEPMOD=/doesnt/exist modules_install  # Suppress depmod
+  
+  echo "Installing .config..."
+  install -m664 .config "${pkgdir}/boot/config-$pkgbase"
 
   # remove build and source links
   rm "$modulesdir"/{source,build}
