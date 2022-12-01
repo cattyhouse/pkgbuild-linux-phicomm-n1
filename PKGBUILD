@@ -8,7 +8,7 @@ url="https://www.kernel.org/"
 arch=(aarch64)
 license=(GPL2)
 makedepends=(
-  bc libelf pahole cpio perl tar xz git
+  bc libelf pahole cpio perl tar xz patch
 )
 options=('!strip')
 _srcname=linux-${pkgver%.*}
@@ -24,7 +24,7 @@ sha256sums=('57b2cf6991910e3b67a1b3490022e8a0674b6965c74c12da1e99d138d1991ee8'
             '62aa80542ab65fe49bbf7fba32696f46923b6ca55cb29d9423f51ebb2ed7698e'
             'baea1be94e73b8bbc6aee84cbc82925cf561b4526418e11c560b8e6984423ff3'
             '4e53813565c705ad3b034f966cd18d7494c5ba9ae2dbb9fb34e5e32ee9008196'
-            'a5fa84b8d9d57858b6acc88987499d8191fb7f869d53200cb264e5e15aa1c1ed')
+            'e0fed6b09498688f55316821b87d3bfe234cb44a88f3d91ad9cd186af6b15313')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
@@ -39,7 +39,7 @@ prepare() {
   echo "${pkgbase#linux}" > localversion.20-pkgname
   
   echo "Applying kernel patch..."
-  git apply --whitespace=nowarn ../patch-${pkgver}
+  patch -Np1 < ../patch-${pkgver}
   
   echo "Setting config..."
   cat "${srcdir}/config" > ./.config
