@@ -1,7 +1,10 @@
 # Maintainer: Justin
 
 pkgbase=linux-phicomm-n1
-pkgver=5.15.80
+pkgver=6.1
+pkgver_main=$(cut -d. -f1-2 <<< $pkgver)
+pkgver_patch=$(cut -d. -f3 <<< $pkgver)
+
 pkgrel=1
 pkgdesc='AArch64 for Phicomm N1'
 url="https://www.kernel.org/"
@@ -11,20 +14,21 @@ makedepends=(
   bc libelf pahole cpio perl tar xz patch
 )
 options=('!strip')
-_srcname=linux-${pkgver%.*}
+_srcname=linux-$pkgver_main
 source=(
   https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.xz
-  https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/patch-${pkgver}.xz
   meson-gxl-s905d-phicomm-n1.dts
   99-phicomm-n1-install.hook
   config
 )
+[[ $pkgver_patch ]] &&
+source+=(https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/patch-${pkgver}.xz)
+
 # https://www.kernel.org/pub/linux/kernel/v5.x/sha256sums.asc
-sha256sums=('57b2cf6991910e3b67a1b3490022e8a0674b6965c74c12da1e99d138d1991ee8'
-            '62aa80542ab65fe49bbf7fba32696f46923b6ca55cb29d9423f51ebb2ed7698e'
+sha256sums=('2ca1f17051a430f6fed1196e4952717507171acfd97d96577212502703b25deb'
             'baea1be94e73b8bbc6aee84cbc82925cf561b4526418e11c560b8e6984423ff3'
             '4e53813565c705ad3b034f966cd18d7494c5ba9ae2dbb9fb34e5e32ee9008196'
-            'e0fed6b09498688f55316821b87d3bfe234cb44a88f3d91ad9cd186af6b15313')
+            'c1dcfebe6f09150f041232802565c82ab9e92914ab86edec395d86acbe8f0b14')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
@@ -38,7 +42,8 @@ prepare() {
   echo "-$pkgrel" > localversion.10-pkgrel
   echo "${pkgbase#linux}" > localversion.20-pkgname
   
-  echo "Applying kernel patch..."
+  [[ $pkgver_patch ]] &&
+  echo "Applying kernel patch..." &&
   patch -Np1 < ../patch-${pkgver}
   
   echo "Setting config..."
