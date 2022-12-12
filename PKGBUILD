@@ -55,6 +55,8 @@ prepare() {
   #diff -u ../config .config || :
   make prepare
   make -s kernelrelease > version
+  # backup and update config
+  cp -f ../../config ../../config.old
   cat ./.config > ${srcdir}/config
   echo "Prepared $pkgbase version $(<version)"
 }
