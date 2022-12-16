@@ -66,7 +66,7 @@ prepare() {
 
 build() {
   cd $_srcname
-  make DTC_FLAGS+="-@" Image modules dtbs
+  make Image modules dtbs
 }
 
 _package() {
