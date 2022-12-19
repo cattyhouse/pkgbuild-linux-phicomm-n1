@@ -23,15 +23,11 @@
             default-state = "on";
         };
     };
+};
 
-    soc {
-        usb: usb@d0078080 {
-            dwc3: usb@c9000000 {
-                /* Workaround for broken LPM implementation found in many USB3 devices. */
-                usb2-lpm-disable;
-            };
-        };
-    };
+&dwc3 {
+    /* fix usb compatible issue */
+    usb2-lpm-disable;
 };
 
 &cvbs_vdac_port {
@@ -43,27 +39,19 @@
 };
 
 &sd_emmc_b {
-    /* disable SD CARD */
+    /* n1 does not have sd card, disable it */
     status = "disabled";
 };
 
-&ethmac {
-    phy-handle = <&eth_phy0>;
-    mdio {
-        compatible = "snps,dwmac-mdio";
-        /* address-cells = <1>; */
-        /* size-cells = <0>; */
-        eth_phy0: ethernet-phy@0 {
-            /* Realtek RTL8211F (0x001cc916) */
-            reg = <0>;
-            reset-assert-us = <10000>;
-            reset-deassert-us = <80000>;
-            reset-gpios = <&gpio GPIOZ_14 GPIO_ACTIVE_LOW>;
-            interrupt-parent = <&gpio_intc>;
-            /* MAC_INTR on GPIOZ_15 */
-            interrupts = <29 IRQ_TYPE_LEVEL_LOW>;
-        };
-    };
+&external_mdio {
+    /* fix: Error: Failed to register MDIO bus for child /soc/bus@c8834000/eth-phy-mux/mdio@2009087f */
+    /* fix: high cpu load issue */
+    compatible = "snps,dwmac-mdio";
+};
+
+&external_phy {
+    /* eee-broken-1000t is no longer needed */
+    /delete-property/ eee-broken-1000t;
 };
 
 /* This UART is connected to the Bluetooth module */
