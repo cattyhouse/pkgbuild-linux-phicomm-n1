@@ -28,7 +28,7 @@ source+=(https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/patch-${pkgver
 sha256sums=('2ca1f17051a430f6fed1196e4952717507171acfd97d96577212502703b25deb'
             'baea1be94e73b8bbc6aee84cbc82925cf561b4526418e11c560b8e6984423ff3'
             '4e53813565c705ad3b034f966cd18d7494c5ba9ae2dbb9fb34e5e32ee9008196'
-            '0c3f3c5ab1671ee286cf09faa19d539f9de26562e0bd250ba477693ea37a0947')
+            '359e9f45b1ce6a188e9e5dc1e51e2215308e7c1c2b54eec0ebd9ca6f4037a834')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
@@ -66,7 +66,7 @@ prepare() {
 
 build() {
   cd $_srcname
-  make Image modules dtbs
+  make DTC_FLAGS="-@" Image modules dtbs
 }
 
 _package() {
