@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
 * Copyright (c) 2018 He Yangxuan
+* Copyright (c) 2022 He Justin
 */
 
 /dts-v1/;
@@ -8,13 +9,10 @@
 #include "meson-gxl-s905d-p230.dts"
 
 / {
-    compatible = "phicomm,n1", "amlogic,s905d", "amlogic,meson-gxl";
-    model = "Phicomm N1";
+    compatible = "phicomm,n1", "amlogic,p230", "amlogic,s905d", "amlogic,meson-gxl";
+    model = "phicomm n1";
 
-    cvbs-connector {
-        status = "disabled";
-    };
-
+    /*
     leds {
         compatible = "gpio-leds";
         status {
@@ -23,11 +21,17 @@
             default-state = "on";
         };
     };
+    */
+};
+
+&{/cvbs-connector} {
+    status = "disabled";
 };
 
 &dwc3 {
     /* fix usb compatible issue */
-    usb2-lpm-disable;
+    /* https://www.kernel.org/doc/Documentation/devicetree/bindings/usb/generic.txt */
+    snps,usb2-lpm-disable;
 };
 
 &cvbs_vdac_port {
@@ -55,6 +59,7 @@
 };
 
 /* This UART is connected to the Bluetooth module */
+/*
 &uart_A {
     status = "okay";
     pinctrl-0 = <&uart_a_pins>, <&uart_a_cts_rts_pins>;
@@ -69,3 +74,4 @@
         clock-names = "lpo";
     };
 };
+*/
