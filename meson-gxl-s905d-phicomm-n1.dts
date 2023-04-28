@@ -64,6 +64,30 @@
     cache-unified;
 };
 
+&cpu0 {
+    /* 32KB L1 cache size */
+    i-cache-size = <32768>;
+    d-cache-size = <32768>;
+};
+
+&cpu1 {
+    /* 32KB L1 cache size */
+    i-cache-size = <32768>;
+    d-cache-size = <32768>;
+};
+
+&cpu2 {
+    /* 32KB L1 cache size */
+    i-cache-size = <32768>;
+    d-cache-size = <32768>;
+};
+
+&cpu3 {
+    /* 32KB L1 cache size */
+    i-cache-size = <32768>;
+    d-cache-size = <32768>;
+};
+
 /* This UART is connected to the Bluetooth module */
 /*
 &uart_A {
