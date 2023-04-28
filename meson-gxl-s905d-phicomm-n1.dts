@@ -59,8 +59,8 @@
 };
 
 &l2 {
-    /* 64KB cache size, needed by linux 6.3 */
-    cache-size = <65536>;
+    /* 512KB cache size, needed by linux 6.3 */
+    cache-size = <524288>;
     cache-unified;
 };
 
