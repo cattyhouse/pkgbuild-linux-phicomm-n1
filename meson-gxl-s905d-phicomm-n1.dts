@@ -58,6 +58,12 @@
     /delete-property/ eee-broken-1000t;
 };
 
+&l2 {
+    /* 64KB cache size, needed by linux 6.3 */
+    cache-size = <65536>;
+    cache-unified;
+};
+
 /* This UART is connected to the Bluetooth module */
 /*
 &uart_A {
